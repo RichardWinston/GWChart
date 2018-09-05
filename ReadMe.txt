@@ -98,4 +98,142 @@ from
 to
         VertLine3D(PX,PYMinus,PYPlus+1,GetMiddleZ);
         HorizLine3D(PXMinus,PXPlus+1,PY,GetMiddleZ);
+		
+In BubbleCh.pas, in the implementation of TBubbleSeries.DrawLegendShape, change the implementation to 
+
+var tmp : Integer;
+// rbw begin change
+  AChart: TCustomChart;
+  LocalRect: TRect;
+// rbw end change
+begin
+  LocalRect := Rect;
+  With Rect do tmp:=Math.Min((Right-Left),(Bottom-Top));
+// rbw begin change
+  tmp := tmp div 3;
+  Dec(LocalRect.Top, tmp);
+  Dec(LocalRect.Bottom, tmp);
+  if Assigned(ParentChart) and (ParentChart is TCustomChart) then
+  begin
+    AChart := TCustomChart(ParentChart);
+    if Assigned(AChart.OnGetSymbolSize) then
+    begin
+      AChart.OnGetSymbolSize(AChart, ValueIndex, tmp);
+    end;
+  end;
+// rbw end change
+  With TPointerAccess(Pointer) do
+  begin
+    ChangeHorizSize(tmp);
+    ChangeVertSize(tmp);
+  end;
+// rbw begin change
+//  inherited;
+  inherited DrawLegendShape(ValueIndex, LocalRect);
+// rbw end change
+end;
+
+In Chart.pas, add 
+  TChartGetSymbolSizeEvent = procedure (Sender: TCustomChart; const ValueIndex: integer; var SymbolSize: integer) of object;
+ after 
+   TChartAllowScrollEvent=Procedure( Sender:TChartAxis; Var AMin,AMax:Double;
+				    Var AllowScroll:Boolean ) of object;
+					
+In Chart.pas, in the declaration of TCustomChart, add a new private field
+    FOnGetSymbolSize   : TChartGetSymbolSizeEvent;
+and a new public property
+    property OnGetSymbolSize:TChartGetSymbolSizeEvent read FOnGetSymbolSize write FOnGetSymbolSize;
+
+In Chart.pas in the declaration of TChart add a new published properties
+    property OnDrawAxisLabel;
+    property OnGetSymbolSize;
+	
+In Chart.pas, Change the implmentation of TCustomChartLegend.CalcItemHeight to
+// rbw begin change
+var
+  LocalChart: TCustomChart;
+  SymbolSize: integer;
+  ValueIndex: integer;
+  ASeries: TChartSeries;
+  tmp: integer;
+  Changed: boolean;
+// rbw end change
+begin
+  result:=ParentChart.Canvas.FontHeight;
+
+  if HasCheckBoxes then
+     result:=Math.Max(6+TeeCheckBoxSize,result);
+
+// rbw begin change
+  if ParentChart is TCustomChart then
+  begin
+    LocalChart := TCustomChart(ParentChart);
+    if Assigned(LocalChart.OnGetSymbolSize) then
+    begin
+      ASeries := GetLegendSeries;
+      SymbolSize := (result-4) div 3;
+      tmp := SymbolSize;
+      Changed := False;
+      for ValueIndex := 0 to ASeries.Count do
+      begin
+        LocalChart.OnGetSymbolSize(LocalChart, ValueIndex, tmp);
+        if tmp > SymbolSize then
+        begin
+          SymbolSize := tmp;
+          Changed := True;
+        end;
+      end;
+      if Changed then
+      begin
+        result := SymbolSize*3;
+      end;
+    end;
+  end;
+// rbw end change
+
+
+  Inc(result,FVertSpacing);
+
+  if Vertical and DividingLines.Visible then { 5.02 }
+     Inc(result,DividingLines.Width);
+end;
+
+In TEngine.pas, in TSeriesPointer.DrawPointer, in DrawDiagonalCross, change
+        LineWithZ(PXMinus, PYMinus, PXPlus+1,PYPlus+1,GetStartZ);
+        LineWithZ(PXPlus,  PYMinus, PXMinus-1,PYPlus+1,GetStartZ);
+to		
+        LineWithZ(PXMinus, PYMinus, PXPlus+1,PYPlus+1,GetMiddleZ);
+        LineWithZ(PXPlus,  PYMinus, PXMinus-1,PYPlus+1,GetMiddleZ);
+
+In TEngine.pas, in TSeriesPointer.DrawPointer, in DrawCross, change
+        VertLine3D(PX,PYMinus,PYPlus+1,GetStartZ);
+        HorizLine3D(PXMinus,PXPlus+1,PY,GetStartZ);
+to
+        VertLine3D(PX,PYMinus,PYPlus+1,GetMiddleZ);
+        HorizLine3D(PXMinus,PXPlus+1,PY,GetMiddleZ);
+		
+In TEngine.pas, in TSeriesPointer.DrawPointer, change 
+       psCircle: if Is3D then
+                    if Self.FDraw3D and SupportsFullRotation then
+                       Sphere(PX,PY,GetMiddleZ,tmpHoriz)
+                    else
+                       EllipseWithZ(PXMinus,PYMinus,PXPlus,PYPlus,GetStartZ)
+                 else
+                    Ellipse(PXMinus,PYMinus,PXPlus,PYPlus);
+to 
+       psCircle: if Is3D then
+                    if Self.FDraw3D and SupportsFullRotation then
+                       Sphere(PX,PY,GetMiddleZ,tmpHoriz)
+                    else
+                      // RBW begin change
+//                       EllipseWithZ(PXMinus,PYMinus,PXPlus,PYPlus,GetStartZ)
+                       EllipseWithZ(PXMinus,PYMinus,PXPlus,PYPlus,GetMiddleZ)
+                      // RBW end change
+                 else
+                    Ellipse(PXMinus,PYMinus,PXPlus,PYPlus);
+		
+
+ 
+
+  
 
