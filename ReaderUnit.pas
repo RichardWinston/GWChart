@@ -1095,6 +1095,8 @@ procedure TfrmZoneBdgtReader.ReadMT3DFile;
 const
   ComponentNumSearchTerm = '>>>FOR COMPONENT NO.';
   ElapsedTimeSearchTerm = 'TOTAL ELAPSED TIME SINCE';
+  Mt3dMSBudgetTerm = 'CUMMULATIVE MASS BUDGETS';
+  Mt3dUsgsBudgetTerm = 'CUMULATIVE MASS BUDGETS';
 var
   SearchTerm: string;
   LineIndex: integer;
@@ -1109,6 +1111,8 @@ var
   ComponentNumber: string;
   ComponentCount: Integer;
   ComponentItem: Integer;
+  BudgetTerm: string;
+  PriorLineIndex: Integer;
 begin
   digits := ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'];
   LineIndex := 0;
@@ -1116,6 +1120,7 @@ begin
   SearchTerm := ComponentNumSearchTerm;
   LineIndex := GetNextLine(SearchTerm, LineIndex);
   ComponentCount := 0;
+  BudgetTerm := Mt3dMSBudgetTerm;
   while LineIndex > -1 do
   begin
     ABudget := TBudget.Create;
@@ -1142,8 +1147,16 @@ begin
       TimeString := Trim(Copy(TimeString, 1, Length(TimeString) - 1));
     end;
 
-    SearchTerm := 'CUMMULATIVE MASS BUDGETS';
+    SearchTerm := BudgetTerm;
+    PriorLineIndex := LineIndex;
     LineIndex := GetNextLine(SearchTerm, LineIndex);
+    if (LineIndex < 0) and (BudgetTerm = Mt3dMSBudgetTerm) then
+    begin
+      BudgetTerm := Mt3dUsgsBudgetTerm;
+      SearchTerm := BudgetTerm;
+      LineIndex := GetNextLine(SearchTerm, PriorLineIndex);
+    end;
+
     CurrentLine := ZBLStringList.Strings[LineIndex];
     TransportStepString := GetStringBetween(CurrentLine, 'TRANSPORT STEP', ',');
 
