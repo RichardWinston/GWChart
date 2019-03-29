@@ -1,10 +1,10 @@
 object frmZoneBdgtReader: TfrmZoneBdgtReader
-  Left = 561
-  Top = 368
+  Left = 1248
+  Top = 355
   Width = 622
-  Height = 545
+  Height = 575
   HelpContext = 300
-  Caption = '3dMSBudgetT= '
+  Caption = 'Budgets'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -24,7 +24,7 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
   TextHeight = 15
   object Splitter1: TSplitter
     Left = 0
-    Top = 226
+    Top = 221
     Width = 604
     Height = 3
     Cursor = crVSplit
@@ -35,7 +35,7 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
     Left = 0
     Top = 0
     Width = 604
-    Height = 226
+    Height = 221
     BackWall.Brush.Color = clWhite
     BackWall.Brush.Style = bsClear
     Legend.Font.Charset = ANSI_CHARSET
@@ -90,25 +90,25 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 229
+    Top = 224
     Width = 604
-    Height = 246
+    Height = 281
     Align = alBottom
     TabOrder = 1
     object Panel1: TPanel
       Left = 458
       Top = 1
       Width = 145
-      Height = 244
+      Height = 279
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 1
       DesignSize = (
         145
-        244)
+        279)
       object btnOpen: TSpeedButton
         Left = 9
-        Top = 211
+        Top = 246
         Width = 24
         Height = 31
         Hint = 'Open ZONEBDGT file'
@@ -133,7 +133,7 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
       end
       object btnSave: TSpeedButton
         Left = 41
-        Top = 211
+        Top = 246
         Width = 24
         Height = 31
         Hint = 'Save ZONEBDGT data in tab-delimited format'
@@ -206,12 +206,13 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
         Left = 8
         Top = 72
         Width = 129
-        Height = 129
+        Height = 169
         Caption = 'Read Data From'
         ItemIndex = 0
         Items.Strings = (
           'ZONEBDGT'
           'MODFLOW'
+          'MODFLOW 6'
           'MOC3D or GWT'
           'SUTRA 09.97'
           'SUTRA'
@@ -224,7 +225,7 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
       end
       object BitBtnClose: TBitBtn
         Left = 71
-        Top = 211
+        Top = 246
         Width = 66
         Height = 31
         Hint = 'Exit from Budgeteer'
@@ -240,13 +241,13 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
       Left = 1
       Top = 1
       Width = 457
-      Height = 244
+      Height = 279
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
       object Panel2: TPanel
         Left = 0
-        Top = 145
+        Top = 180
         Width = 457
         Height = 99
         Align = alBottom
@@ -447,28 +448,28 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
         Left = 0
         Top = 0
         Width = 457
-        Height = 145
+        Height = 180
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
         object splBudget: TSplitter
           Left = 299
           Top = 0
-          Height = 145
+          Height = 180
           Align = alRight
           Beveled = True
         end
         object splNet: TSplitter
           Left = 155
           Top = 0
-          Height = 145
+          Height = 180
           Beveled = True
         end
         object pnlInBudget: TPanel
           Left = 158
           Top = 0
           Width = 141
-          Height = 145
+          Height = 180
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 1
@@ -501,7 +502,7 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
             Left = 0
             Top = 24
             Width = 141
-            Height = 121
+            Height = 156
             OnClickCheck = clbInClickCheck
             Align = alClient
             ItemHeight = 15
@@ -512,7 +513,7 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
           Left = 302
           Top = 0
           Width = 155
-          Height = 145
+          Height = 180
           Align = alRight
           BevelOuter = bvNone
           TabOrder = 2
@@ -545,7 +546,7 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
             Left = 0
             Top = 25
             Width = 155
-            Height = 120
+            Height = 155
             OnClickCheck = clbOutClickCheck
             Align = alClient
             ItemHeight = 15
@@ -556,7 +557,7 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
           Left = 0
           Top = 0
           Width = 155
-          Height = 145
+          Height = 180
           Align = alLeft
           BevelOuter = bvNone
           TabOrder = 0
@@ -589,7 +590,7 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
             Left = 0
             Top = 25
             Width = 155
-            Height = 120
+            Height = 155
             OnClickCheck = clbNetClickCheck
             Align = alClient
             ItemHeight = 15

@@ -207,6 +207,7 @@ type
       const FirstSearchTerm, CumBudgetName, RateBudgetName: string);
     procedure ReadABudget(CumBudget, RateBudget: TBudget;
       var LineIndex: Integer; const TimeUnitsString: string);
+    procedure ReadModflow6File;
     { Private declarations }
   public
     FFileName: string;
@@ -254,6 +255,9 @@ type
     value: string;
     function RealValue: double;
   end;
+
+  TSourceTypes = (stZONEBDGT, stMODFLOW, stModflow6, stGWT, stSUTRA97, stSUTRA, stMT3D,
+    stHST3D, stSEAWAT2000, stGSFLOW);
 
 var
   frmZoneBdgtReader: TfrmZoneBdgtReader;
@@ -3622,6 +3626,11 @@ begin
   ReadModflowOrSeawatFile('VOLUMETRIC BUDGET FOR ENTIRE MODEL');
 end;
 
+procedure TfrmZoneBdgtReader.ReadModflow6File;
+begin
+  ReadModflowOrSeawatFile('VOLUME BUDGET FOR ENTIRE MODEL');
+end;
+
 procedure TfrmZoneBdgtReader.ReadGSFLOW;
 var
   SearchTerm: string;
@@ -3873,7 +3882,7 @@ procedure TfrmZoneBdgtReader.ReadFile;
 //  F: TextFile;
 //  S: string;
 begin
-  if not (rgDataSource.ItemIndex in [1,7]) then
+  if not (TSourceTypes(rgDataSource.ItemIndex) in [stMODFLOW,stSEAWAT2000]) then
   begin
     ZBLStringList.FileName := OpenDialog1.FileName;
 //    AssignFile(F, OpenDialog1.FileName);
@@ -3929,40 +3938,44 @@ begin
       MarkedPoints.Clear;
       ReadFile;
       //    ZBLStringList.LoadFromFile(OpenDialog1.FileName);
-      case rgDataSource.ItemIndex of
-        0:
+      case TSourceTypes(rgDataSource.ItemIndex) of
+        stZONEBDGT:
           begin
             ReadZonebdgtFile;
           end;
-        1:
+        stMODFLOW:
           begin
             ReadModflowFile;
           end;
-        2:
+        stModflow6:
+          begin
+            ReadModflow6File;
+          end;
+        stGWT:
           begin
             ReadMOC3DFile;
           end;
-        3:
+        stSUTRA97:
           begin
             ReadSUTRAFile;
           end;
-        4:
+        stSUTRA:
           begin
             ReadSutra2D3D_File;
           end;
-        5:
+        stMT3D:
           begin
             ReadMT3DFile;
           end;
-        6:
+        stHST3D:
           begin
             ReadHST3DFile;
           end;
-        7:
+        stSEAWAT2000:
           begin
             ReadSeawatFile;
           end;
-        8:
+        stGSFLOW:
           begin
             ReadGSFLOW;
           end;
@@ -4428,13 +4441,13 @@ begin
                 //              if ABudget.InList.Count > Index then
               begin
                 //                ABudgetItem := ABudget.InList[Index];
-                if rgDataSource.ItemIndex = 3 {Pos('SUTRA',ABudget.Zone) > 0}
+                if TSourceTypes(rgDataSource.ItemIndex) = stSUTRA97 {Pos('SUTRA',ABudget.Zone) > 0}
                   then
                 begin
                   BarSeries.Add(ABudgetItem.RealValue, ABudgetItem.Name,
                     AColor);
                 end
-                else if rgDataSource.ItemIndex = 4
+                else if TSourceTypes(rgDataSource.ItemIndex) = stSUTRA
                   {Pos('SUTRA',ABudget.Zone) > 0} then
                 begin
                   BarSeries.Add(ABudgetItem.RealValue, '+ ' + ABudgetItem.Name,
@@ -4459,7 +4472,7 @@ begin
                 ABudgetItem := ABudget.GetFromOutListByName(clbOut.Items[Index]);
                 if ABudgetItem <> nil then
                 begin
-                  if rgDataSource.ItemIndex = 4 {Pos('SUTRA',ABudget.Zone) > 0}
+                  if TSourceTypes(rgDataSource.ItemIndex) = stSUTRA {Pos('SUTRA',ABudget.Zone) > 0}
                     then
                   begin
                     BarSeries.Add(ABudgetItem.RealValue, '- ' + ABudgetItem.Name,
@@ -4562,12 +4575,12 @@ begin
             ALineSeries.OnClickPointer := Series1ClickPointer;
             ALineSeries.Marks.Visible := True;
 
-            if (rgDataSource.ItemIndex in [3, 6]) then
+            if (TSourceTypes(rgDataSource.ItemIndex) in [stSUTRA97, stHST3D]) then
             begin // SUTRA 97 or HST3D
               ALineSeries.Title := clbIn.Items[BudgetItemIndex];
               ALineSeries.Marks.Visible := False;
             end
-            else if (rgDataSource.ItemIndex = 4) then
+            else if (TSourceTypes(rgDataSource.ItemIndex) = stSUTRA) then
             begin // SUTRA
               ALineSeries.Title := '+ ' + clbIn.Items[BudgetItemIndex];
               ALineSeries.Marks.Visible := False;
@@ -4643,7 +4656,7 @@ begin
               ALineSeries.OnGetMarkText := Series1GetMarkText;
               ALineSeries.OnClickPointer := Series1ClickPointer;
               ALineSeries.Marks.Visible := True;
-              if (rgDataSource.ItemIndex = 4) then
+              if (TSourceTypes(rgDataSource.ItemIndex) = stSUTRA) then
               begin // SUTRA or HST3D
                 ALineSeries.Title := '- ' + clbOut.Items[BudgetItemIndex];
               ALineSeries.Marks.Visible := False;
@@ -5266,8 +5279,8 @@ procedure TfrmZoneBdgtReader.rgDataSourceClick(Sender: TObject);
 begin
   cbOut.Caption := '"Out" Budget Items';
   cbIn.Caption := '"In" Budget Items';
-  case rgDataSource.ItemIndex of
-    0: // ZONEBDGT
+  case TSourceTypes(rgDataSource.ItemIndex) of
+    stZONEBDGT: // ZONEBDGT
       begin
         OpenDialog1.Filter :=
           'Zonebudget Listing files (*.zbl, *.zblst)|*.zbl;*.zblst|All Files (*.*)|*.*';
@@ -5288,7 +5301,7 @@ begin
         btnOpen.Hint := 'Open ZONEBDGT file';
         btnSave.Hint := 'Save ZONEBDGT data in tab-delimited format';
       end;
-    1: // MODFLOW
+    stMODFLOW, stModflow6: // MODFLOW
       begin
         OpenDialog1.Filter :=
           'MODFLOW Listing files |*.lst;*.out;output.dat|All Files (*.*)|*.*';
@@ -5308,7 +5321,7 @@ begin
         btnOpen.Hint := 'Open MODFLOW file';
         btnSave.Hint := 'Save MODFLOW data in tab-delimited format';
       end;
-    2: // MOC3D
+    stGWT: // MOC3D
       begin
         OpenDialog1.Filter :=
           'GWT or MOC3D Listing files|*.out;Moc3d.lst|All Files (*.*)|*.*';
@@ -5328,7 +5341,7 @@ begin
         btnOpen.Hint := 'Open MOC3D file';
         btnSave.Hint := 'Save MOC3D data in tab-delimited format';
       end;
-    3: // SUTRA
+    stSUTRA97: // SUTRA
       begin
         OpenDialog1.Filter :=
           'SUTRA Listing files (*.lst)|*.lst|All Files (*.*)|*.*';
@@ -5349,7 +5362,7 @@ begin
         btnOpen.Hint := 'Open SUTRA file';
         btnSave.Hint := 'Save SUTRA data in tab-delimited format';
       end;
-    4: //SUTRA 2D3D
+    stSUTRA: //SUTRA 2D3D
       begin
         cbIn.Caption := '"+" Budget Items';
         cbOut.Caption := '"-" Budget Items';
@@ -5372,7 +5385,7 @@ begin
         btnSave.Hint := 'Save SUTRA data in tab-delimited format';
       end;
 
-    5: // MT3D
+    stMT3D: // MT3D
       begin
         OpenDialog1.Filter :=
           'MT3D Listing files(*.mls;*.out;output.mt3;*.m3d)|*.mls;*.out;output.mt3;*.m3d|All Files (*.*)|*.*';
@@ -5392,7 +5405,7 @@ begin
         btnOpen.Hint := 'Open MT3D file';
         btnSave.Hint := 'Save MT3D data in tab-delimited format';
       end;
-    6: // HST3D
+    stHST3D: // HST3D
       begin
         OpenDialog1.Filter :=
           'Global flow balance (O.bal.*)|O.bal.*|All Files (*.*)|*.*';
@@ -5414,7 +5427,7 @@ begin
         btnOpen.Hint := 'Open HST3D file';
         btnSave.Hint := 'Save HST3D data in tab-delimited format';
       end;
-    7: // SEAWAT-2000
+    stSEAWAT2000: // SEAWAT-2000
       begin
         OpenDialog1.Filter :=
           'SEAWAT Listing files |*.lst;*.out;output.dat|All Files (*.*)|*.*';
@@ -5434,7 +5447,7 @@ begin
         btnOpen.Hint := 'Open SEAWAT-2000 file';
         btnSave.Hint := 'Save SEAWAT-2000 data in tab-delimited format';
       end;
-    8: // GSFLOW
+    stGSFLOW: // GSFLOW
       begin
         OpenDialog1.Filter :=
           'GSFLOW files |*.lst;*.out;output.dat|All Files (*.*)|*.*';
@@ -5471,7 +5484,7 @@ end;
 
 procedure TfrmZoneBdgtReader.FormResize(Sender: TObject);
 begin
-  if rgDataSource.ItemIndex = 4 then
+  if TSourceTypes(rgDataSource.ItemIndex) = stSUTRA then
   begin
     pnlNetBudget.Visible := True;
     splNet.Visible := True;
