@@ -4,7 +4,7 @@ object frmZoneBdgtReader: TfrmZoneBdgtReader
   Width = 622
   Height = 575
   HelpContext = 300
-  Caption = 'Budgets'
+  Caption = 'GW_Chart Water Budgets: Water and solute budgets for numerical models'
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
